@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thank You!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .hearts-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .heart {
+            position: absolute;
+            font-size: 20px;
+            animation: float linear infinite;
+            opacity: 0.7;
+        }
+
+        @keyframes float {
+            from {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.7;
+            }
+            90% {
+                opacity: 0.7;
+            }
+            to {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .thank-you-container {
+            text-align: center;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 60px;
+            border-radius: 30px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            animation: bounceIn 1s ease-out;
+            max-width: 600px;
+            margin: 20px;
+        }
+
+        .thank-you-text {
+            font-size: 3rem;
+            color: #ff6b6b;
+            margin-bottom: 20px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            animation: pulse 2s infinite alternate;
+        }
+
+        .message {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .heart-emoji {
+            font-size: 4rem;
+            animation: heartbeat 1.5s ease-in-out infinite;
+            margin: 20px 0;
+        }
+
+        @keyframes bounceIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            from {
+                transform: scale(1);
+            }
+            to {
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes heartbeat {
+            0%, 100% {
+                transform: scale(1);
+            }
+            25% {
+                transform: scale(1.1);
+            }
+            45% {
+                transform: scale(1);
+            }
+            60% {
+                transform: scale(1.15);
+            }
+            80% {
+                transform: scale(1);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .thank-you-text {
+                font-size: 2rem;
+            }
+            
+            .message {
+                font-size: 1.2rem;
+            }
+            
+            .thank-you-container {
+                padding: 40px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="hearts-container"></div>
+    
+    <div class="thank-you-container">
+        <h1 class="thank-you-text">Thank You! ❤️</h1>
+        <div class="heart-emoji">💕</div>
+        <p class="message">I'm so excited for our date! You've made me the happiest person in the world!</p>
+        <div class="heart-emoji">❤️</div>
+    </div>
+
+    <script>
+        // Create floating hearts
+        function createHeart() {
+            const heart = document.createElement('div');
+            heart.className = 'heart';
+            heart.innerHTML = Math.random() > 0.5 ? '❤️' : '💕';
+            
+            // Random position
+            heart.style.left = Math.random() * 100 + '%';
+            
+            // Random size
+            const size = Math.random() * 25 + 15;
+            heart.style.fontSize = size + 'px';
+            
+            // Random animation duration
+            const duration = Math.random() * 3 + 5;
+            heart.style.animationDuration = duration + 's';
+            
+            // Random animation delay
+            const delay = Math.random() * 2;
+            heart.style.animationDelay = delay + 's';
+            
+            document.querySelector('.hearts-container').appendChild(heart);
+            
+            // Remove heart after animation
+            setTimeout(() => {
+                heart.remove();
+            }, (duration + delay) * 1000);
+        }
+        
+        // Create hearts periodically
+        setInterval(createHeart, 200);
+        
+        // Create initial hearts
+        for (let i = 0; i < 20; i++) {
+            setTimeout(createHeart, i * 100);
+        }
+    </script>
+</body>
+</html>
