@@ -1,0 +1,1922 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Night Sky Lilies</title>
+  <style>
+    :root {
+      --bg-top: #020506;
+      --bg-mid: #031014;
+      --bg-bottom: #010304;
+      --glow: rgba(85, 190, 210, 0.1);
+      --stem-main: #2e8b66;
+      --stem-dark: #1f5e46;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background:
+        radial-gradient(circle at center, var(--glow) 0%, rgba(0, 0, 0, 0) 45%),
+        linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 50%, var(--bg-bottom) 100%);
+      color: #d5e6ea;
+    }
+
+    .stage {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      isolation: isolate;
+    }
+
+    .stage::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at center, rgba(85, 190, 210, 0.14) 0%, rgba(85, 190, 210, 0) 48%);
+      opacity: 0.28;
+      animation: breatheHalo 10.8s ease-in-out infinite;
+      z-index: 0;
+    }
+
+    .stage::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at center, rgba(0, 0, 0, 0) 35%, rgba(0, 0, 0, 0.58) 100%);
+      z-index: 6;
+    }
+
+    .moonbeam {
+      position: absolute;
+      left: -24%;
+      top: -10%;
+      width: 44%;
+      height: 72%;
+      pointer-events: none;
+      z-index: 2;
+      background: linear-gradient(112deg, rgba(179, 234, 244, 0) 0%, rgba(179, 234, 244, 0.08) 35%, rgba(186, 241, 255, 0.13) 50%, rgba(179, 234, 244, 0.08) 65%, rgba(179, 234, 244, 0) 100%);
+      filter: blur(16px);
+      opacity: 0;
+      transform: rotate(-8deg);
+      animation: moonbeamSweep 26s ease-in-out infinite;
+    }
+
+    .ground {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 22vh;
+      background: linear-gradient(180deg, rgba(1, 16, 14, 0) 0%, rgba(2, 20, 16, 0.85) 50%, rgba(1, 10, 8, 1) 100%);
+      z-index: 1;
+    }
+
+    .star-field {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      overflow: hidden;
+      transform: translate3d(var(--px, 0px), var(--py, 0px), 0);
+    }
+
+    .shooting-star-field {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .star {
+      position: absolute;
+      left: var(--x, 50%);
+      top: var(--y, 50%);
+      width: var(--s, 2px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      opacity: var(--o, 0.6);
+      background: radial-gradient(circle at 35% 35%, rgba(214, 247, 255, 0.95) 0%, rgba(135, 220, 246, 0.82) 62%, rgba(80, 172, 212, 0) 100%);
+      box-shadow: 0 0 6px rgba(135, 220, 246, 0.5);
+    }
+
+    .shooting-star {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: var(--len, 82px);
+      height: 2px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(204, 247, 255, 0) 0%, rgba(204, 247, 255, 0.88) 42%, rgba(127, 220, 248, 0.3) 100%);
+      filter: blur(0.35px);
+      opacity: 0;
+      transform: translate3d(var(--sx, 0px), var(--sy, 0px), 0) rotate(var(--ang, -18deg));
+      animation: shootingStar var(--sd, 2600ms) ease-out forwards;
+    }
+
+    .grass-field {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 26vh;
+      z-index: 2;
+      pointer-events: none;
+      overflow: hidden;
+      animation: breatheGrass 9.6s ease-in-out infinite;
+      transform: translate3d(var(--px, 0px), var(--py, 0px), 0);
+    }
+
+    .firefly-field {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      pointer-events: none;
+      overflow: hidden;
+      transform: translate3d(var(--px, 0px), var(--py, 0px), 0);
+    }
+
+    .firefly {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: var(--s, 5px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      opacity: var(--o, 0.7);
+      background: radial-gradient(circle at 35% 35%, rgba(219, 252, 255, 0.95) 0%, rgba(127, 236, 255, 0.9) 45%, rgba(65, 183, 238, 0.5) 100%);
+      filter: blur(var(--b, 0.3px));
+      box-shadow: 0 0 8px rgba(117, 233, 255, 0.7), 0 0 18px rgba(78, 201, 255, 0.52), 0 0 28px rgba(63, 171, 239, 0.35);
+      animation: fireflyPulse var(--pulse, 3.8s) ease-in-out infinite;
+      animation-delay: var(--pulse-delay, 0s);
+      transform: translate3d(0, 0, 0);
+      will-change: transform, opacity;
+      transition: filter 1.6s ease, box-shadow 1.6s ease, opacity 1.6s ease;
+    }
+
+    .firefly.resting {
+      box-shadow: 0 0 12px rgba(145, 240, 255, 0.84), 0 0 24px rgba(95, 216, 255, 0.62), 0 0 36px rgba(67, 184, 245, 0.44);
+      filter: blur(var(--b, 0.3px)) brightness(1.25);
+    }
+
+    .blade {
+      position: absolute;
+      bottom: -4px;
+      left: var(--x, 50%);
+      width: 2px;
+      height: var(--h, 90px);
+      transform-origin: 50% 100%;
+      transform: translateX(-50%) rotate(var(--r, 0deg));
+      border-radius: 999px 999px 30% 30%;
+      background: linear-gradient(180deg, rgba(62, 255, 134, 0.15) 0%, rgba(74, 255, 148, 0.76) 52%, rgba(24, 186, 96, 0.98) 100%);
+      box-shadow: 0 0 8px rgba(82, 255, 133, 0.78), 0 0 20px rgba(56, 244, 125, 0.45);
+      opacity: var(--o, 1);
+      animation: grassBreeze var(--dur, 7s) ease-in-out infinite;
+      animation-delay: var(--delay, 0s);
+      --cb: 0deg;
+    }
+
+    .blade::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 0;
+      width: 3px;
+      height: 8px;
+      transform: translateX(-50%);
+      border-radius: 100% 100% 20% 20%;
+      background: rgba(173, 255, 206, 0.7);
+      filter: blur(0.2px);
+    }
+
+    .flower-bed {
+      position: absolute;
+      left: 50%;
+      bottom: 7vh;
+      transform: translateX(calc(-50% + var(--px, 0px))) translateY(var(--py, 0px));
+      width: min(80vw, 620px);
+      height: min(60vh, 540px);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      z-index: 3;
+      animation: breatheFlowers 10.2s ease-in-out infinite;
+    }
+
+    .flower {
+      --base-tilt: 0deg;
+      --fcx: 0px;
+      --fcr: 0deg;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      transform-origin: bottom center;
+      animation: flowerBreeze 8s ease-in-out infinite;
+    }
+
+    .flower.left,
+    .flower.right {
+      margin-bottom: 20px;
+    }
+
+    .flower.left {
+      --base-tilt: -3deg;
+      animation-duration: 7.2s;
+      animation-delay: -1.2s;
+    }
+
+    .flower.right {
+      --base-tilt: 3deg;
+      animation-duration: 8.9s;
+      animation-delay: -2.1s;
+    }
+
+    .flower.middle {
+      --base-tilt: 0.8deg;
+      animation-duration: 8.1s;
+      animation-delay: -0.6s;
+    }
+
+    .stem {
+      --stem-base: 0deg;
+      --stem-cursor: 0deg;
+      position: relative;
+      width: 8px;
+      border-radius: 70% 85% 70% 90% / 14% 14% 86% 86%;
+      background: linear-gradient(180deg, rgba(84, 195, 143, 0.92) 0%, var(--stem-main) 42%, var(--stem-dark) 100%);
+      box-shadow: 0 0 12px rgba(86, 180, 150, 0.28), 0 0 24px rgba(36, 132, 96, 0.2);
+      margin-top: -8px;
+      transform-origin: 50% 100%;
+      transform: rotate(calc(var(--stem-base) + var(--stem-cursor)));
+    }
+
+    .stem::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(90deg, rgba(190, 255, 225, 0.28) 0%, rgba(190, 255, 225, 0) 45%);
+      mix-blend-mode: screen;
+      pointer-events: none;
+    }
+
+    .flower.middle .stem {
+      --stem-base: 2deg;
+    }
+
+    .flower.left .stem {
+      --stem-base: -3deg;
+    }
+
+    .flower.right .stem {
+      --stem-base: 4deg;
+    }
+
+    .flower.middle .stem {
+      height: 315px;
+    }
+
+    .flower.left .stem,
+    .flower.right .stem {
+      height: 252px;
+    }
+
+    .leaf {
+      --leaf-base-transform: rotate(0deg);
+      position: absolute;
+      width: 94px;
+      height: 28px;
+      border-radius: 10% 90% 22% 78% / 24% 76% 24% 76%;
+      background: linear-gradient(100deg, rgba(15, 82, 50, 0.9) 0%, rgba(48, 169, 113, 0.9) 58%, rgba(150, 255, 210, 0.86) 100%);
+      box-shadow: inset 0 0 10px rgba(202, 255, 233, 0.24), 0 0 10px rgba(69, 188, 132, 0.38);
+      transform-origin: 8% 50%;
+      z-index: 2;
+      transform: var(--leaf-base-transform);
+      animation: leafBreeze 6.8s ease-in-out infinite;
+    }
+
+    .leaf::after {
+      content: "";
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      width: 70%;
+      height: 1px;
+      transform: translateY(-50%);
+      background: linear-gradient(90deg, rgba(208, 255, 236, 0.55) 0%, rgba(208, 255, 236, 0) 100%);
+      pointer-events: none;
+    }
+
+    .dew-drop {
+      position: absolute;
+      right: 8px;
+      top: 7px;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, rgba(239, 255, 250, 0.95) 0%, rgba(187, 241, 226, 0.7) 52%, rgba(133, 212, 188, 0.12) 100%);
+      box-shadow: 0 0 6px rgba(166, 235, 214, 0.45);
+      animation: dewTwinkle var(--dd, 7.8s) ease-in-out infinite;
+      animation-delay: var(--dly, 0s);
+      pointer-events: none;
+    }
+
+    .petal.landing-touch {
+      --lg: 0.05;
+    }
+
+    .petal.shimmer {
+      box-shadow:
+        inset 0 -18px 24px rgba(46, 123, 160, 0.34),
+        inset 0 12px 22px rgba(255, 255, 255, 0.64),
+        inset 9px 0 13px rgba(134, 216, 248, 0.24),
+        inset -9px 0 13px rgba(134, 216, 248, 0.24),
+        0 0 15px rgba(193, 247, 255, 0.66),
+        0 0 26px rgba(128, 224, 249, 0.5);
+      animation: petalShimmer 1.35s ease-out 1;
+    }
+
+    .leaf.landing-touch {
+      box-shadow:
+        inset 0 0 10px rgba(202, 255, 233, 0.24),
+        0 0 10px rgba(69, 188, 132, 0.38),
+        0 0 16px rgba(136, 244, 202, 0.34);
+    }
+
+    .leaf.l1 {
+      --leaf-base-transform: rotate(26deg);
+      left: 2px;
+      bottom: 30px;
+      animation-duration: 6.2s;
+      animation-delay: -0.9s;
+      z-index: 3;
+    }
+
+    .leaf.l2 {
+      --leaf-base-transform: scaleX(-1) rotate(24deg);
+      right: 2px;
+      bottom: 76px;
+      animation-duration: 7.1s;
+      animation-delay: -1.8s;
+      z-index: 4;
+    }
+
+    .leaf.l3 {
+      --leaf-base-transform: rotate(17deg) scale(0.92);
+      left: 0;
+      bottom: 128px;
+      animation-duration: 7.6s;
+      animation-delay: -2.6s;
+      z-index: 3;
+    }
+
+    .leaf.l4 {
+      --leaf-base-transform: scaleX(-1) rotate(16deg) scale(0.86);
+      right: 0;
+      bottom: 180px;
+      animation-duration: 8.4s;
+      animation-delay: -3.3s;
+      z-index: 2;
+    }
+
+    .lily {
+      --pcx: 0px;
+      --pcy: 0deg;
+      --hg: 0;
+      position: relative;
+      width: 156px;
+      height: 138px;
+      margin-bottom: 4px;
+      perspective: 620px;
+      transform-style: preserve-3d;
+      filter:
+        brightness(calc(1 + var(--hg, 0)))
+        drop-shadow(0 0 10px rgba(188, 240, 255, 0.28))
+        drop-shadow(0 0 24px rgba(84, 192, 233, 0.22));
+      isolation: isolate;
+    }
+
+    .flower.left .lily,
+    .flower.right .lily {
+      transform: scale(0.84);
+      transform-origin: 50% 100%;
+    }
+
+    .petal-ring {
+      position: absolute;
+      inset: 0;
+      transform-style: preserve-3d;
+    }
+
+    .petal {
+      position: absolute;
+      left: 50%;
+      top: 81%;
+      width: 88px;
+      height: 124px;
+      transform-origin: 50% 100%;
+      transform:
+        translate3d(calc(-50% + var(--pcx, 0px)), calc(-100% + var(--lift, 0px)), var(--z, 0px))
+        rotateZ(var(--r, 0deg))
+        rotateX(var(--rx, 0deg))
+        rotateY(calc(var(--ry, 0deg) + var(--pcy, 0deg)))
+        skewX(var(--sk, 0deg))
+        scale(var(--s, 1));
+      border-radius: 50% 50% 58% 58% / 88% 88% 28% 28%;
+      background:
+        radial-gradient(ellipse 86% 72% at 50% 14%, rgba(250, 255, 248, 0.99) 0%, rgba(255, 255, 255, 0.97) 35%, rgba(233, 250, 255, 0.9) 63%, rgba(150, 227, 255, 0.72) 100%),
+        linear-gradient(180deg, rgba(184, 230, 202, 0.38) 0%, rgba(255, 255, 255, 0.18) 36%, rgba(255, 255, 255, 0) 82%);
+      border: 1px solid rgba(176, 241, 255, 0.74);
+      box-shadow:
+        inset 0 -18px 24px rgba(46, 123, 160, 0.34),
+        inset 0 12px 22px rgba(255, 255, 255, 0.64),
+        inset 9px 0 13px rgba(134, 216, 248, 0.24),
+        inset -9px 0 13px rgba(134, 216, 248, 0.24),
+        0 0 12px rgba(171, 238, 255, 0.4),
+        0 0 20px rgba(102, 205, 241, 0.28);
+      clip-path: polygon(50% 100%, 42% 90%, 35% 70%, 31% 46%, 31% 24%, 37% 9%, 50% 2%, 63% 9%, 69% 24%, 69% 46%, 65% 70%, 58% 90%);
+      opacity: var(--o, 1);
+      filter: brightness(calc(var(--br, 1) + var(--lg, 0)));
+      animation: petalBreathe var(--pd, 7s) ease-in-out infinite;
+      animation-delay: var(--pdelay, 0s);
+    }
+
+    .petal::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background:
+        linear-gradient(0deg, rgba(52, 141, 112, 0.42) 0%, rgba(145, 224, 248, 0.2) 42%, rgba(255, 255, 255, 0) 74%),
+        radial-gradient(ellipse 32% 86% at 50% 56%, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0) 100%);
+      mix-blend-mode: screen;
+      pointer-events: none;
+    }
+
+    .petal::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: 6px;
+      width: 64%;
+      height: 38%;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background: radial-gradient(ellipse at 50% 82%, rgba(32, 93, 80, 0.44) 0%, rgba(32, 93, 80, 0.2) 36%, rgba(32, 93, 80, 0) 100%);
+      pointer-events: none;
+    }
+
+    .petal:nth-child(1) {
+      --r: -34deg;
+      --ry: -18deg;
+      --rx: -15deg;
+      --lift: -2px;
+      --z: -30px;
+      --s: 0.9;
+      --sk: -2deg;
+      --o: 0.84;
+      --br: 0.9;
+      --pd: 7.4s;
+      --pdelay: -1.2s;
+      z-index: 1;
+    }
+
+    .petal:nth-child(2) {
+      --r: 0deg;
+      --ry: 0deg;
+      --rx: -20deg;
+      --lift: -6px;
+      --z: -36px;
+      --s: 0.88;
+      --sk: 0deg;
+      --o: 0.8;
+      --br: 0.86;
+      --pd: 7.1s;
+      --pdelay: -2.1s;
+      z-index: 2;
+    }
+
+    .petal:nth-child(3) {
+      --r: 34deg;
+      --ry: 18deg;
+      --rx: -15deg;
+      --lift: -2px;
+      --z: -30px;
+      --s: 0.9;
+      --sk: 2deg;
+      --o: 0.84;
+      --br: 0.9;
+      --pd: 7.6s;
+      --pdelay: -0.8s;
+      z-index: 1;
+    }
+
+    .petal:nth-child(4) {
+      --r: -20deg;
+      --ry: -10deg;
+      --rx: 20deg;
+      --lift: -17px;
+      --z: 14px;
+      --s: 1.06;
+      --sk: -1.2deg;
+      --o: 0.94;
+      --br: 1.02;
+      --pd: 6.8s;
+      --pdelay: -1.7s;
+      z-index: 4;
+    }
+
+    .petal:nth-child(5) {
+      --r: 0deg;
+      --ry: 0deg;
+      --rx: 24deg;
+      --lift: -23px;
+      --z: 24px;
+      --s: 1.15;
+      --sk: 0deg;
+      --o: 0.98;
+      --br: 1.08;
+      --pd: 6.5s;
+      --pdelay: -2.4s;
+      z-index: 5;
+    }
+
+    .petal:nth-child(6) {
+      --r: 20deg;
+      --ry: 10deg;
+      --rx: 20deg;
+      --lift: -17px;
+      --z: 14px;
+      --s: 1.06;
+      --sk: 1.2deg;
+      --o: 0.94;
+      --br: 1.02;
+      --pd: 6.9s;
+      --pdelay: -1.3s;
+      z-index: 4;
+    }
+
+    .lily::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 79%;
+      width: 66px;
+      height: 32px;
+      transform: translate(-50%, -50%) rotateX(20deg);
+      border-radius: 50%;
+      background: radial-gradient(ellipse at 50% 36%, rgba(173, 235, 248, 0.48) 0%, rgba(70, 154, 182, 0.34) 42%, rgba(13, 48, 60, 0.62) 100%);
+      filter: blur(1px);
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    .flower-cup {
+      position: absolute;
+      left: 50%;
+      top: 84%;
+      width: 48px;
+      height: 18px;
+      transform: translate(-50%, -50%) rotateX(18deg);
+      border-radius: 55% 55% 50% 50% / 80% 80% 30% 30%;
+      background: radial-gradient(ellipse at 50% 40%, rgba(247, 255, 249, 0.9) 0%, rgba(225, 249, 236, 0.68) 52%, rgba(141, 202, 175, 0.38) 100%);
+      box-shadow: inset 0 3px 6px rgba(255, 255, 255, 0.24), 0 0 9px rgba(158, 226, 201, 0.28);
+      filter: blur(0.35px);
+      z-index: 6;
+    }
+
+    .stamens {
+      position: absolute;
+      left: 50%;
+      top: 79%;
+      width: 56px;
+      height: 34px;
+      transform: translate(-50%, -50%);
+      z-index: 8;
+      pointer-events: none;
+      animation: centerPulse 2.8s ease-in-out infinite, stamenBreath 10.2s ease-in-out infinite;
+      filter: drop-shadow(0 0 12px rgba(255, 226, 118, 0.68)) drop-shadow(0 0 24px rgba(255, 217, 86, 0.5));
+    }
+
+    .stamen {
+      position: absolute;
+      left: 50%;
+      top: 90%;
+      width: 2px;
+      height: calc(24px * var(--len, 1));
+      transform-origin: 50% 100%;
+      transform: translate(-50%, -100%) rotate(var(--a, 0deg));
+      border-radius: 999px;
+      background: linear-gradient(180deg, rgba(255, 248, 178, 0.2) 0%, rgba(255, 230, 120, 0.75) 45%, rgba(255, 217, 79, 0.95) 100%);
+      box-shadow: 0 0 7px rgba(255, 220, 95, 0.65), 0 0 14px rgba(255, 212, 74, 0.55);
+    }
+
+    .stamen::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: -3px;
+      width: 7px;
+      height: 7px;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, rgba(255, 252, 208, 1) 0%, rgba(255, 236, 128, 0.95) 45%, rgba(255, 206, 74, 0.86) 100%);
+      box-shadow: 0 0 10px rgba(255, 228, 102, 1), 0 0 18px rgba(255, 214, 64, 0.76);
+    }
+
+    .stamen:nth-child(1) {
+      --a: -26deg;
+      --len: 0.78;
+    }
+
+    .stamen:nth-child(2) {
+      --a: -14deg;
+      --len: 0.92;
+    }
+
+    .stamen:nth-child(3) {
+      --a: -5deg;
+      --len: 1;
+    }
+
+    .stamen:nth-child(4) {
+      --a: 5deg;
+      --len: 1;
+    }
+
+    .stamen:nth-child(5) {
+      --a: 14deg;
+      --len: 0.92;
+    }
+
+    .stamen:nth-child(6) {
+      --a: 26deg;
+      --len: 0.78;
+    }
+
+    body.intro .flower {
+      animation: none;
+    }
+
+    body.intro .stem {
+      opacity: 0.16;
+      transform: rotate(calc(var(--stem-base) + var(--stem-cursor))) scaleY(0.04);
+      animation: stemIntro 1.2s ease-out forwards;
+    }
+
+    body.intro .flower.left .stem {
+      animation-delay: 0.05s;
+    }
+
+    body.intro .flower.middle .stem {
+      animation-delay: 0s;
+    }
+
+    body.intro .flower.right .stem {
+      animation-delay: 0.1s;
+    }
+
+    body.intro .leaf {
+      opacity: 0;
+      transform: var(--leaf-base-transform) scale(0.18);
+      animation: leafIntro 0.9s ease-out forwards;
+    }
+
+    body.intro .leaf.l1 {
+      animation-delay: 1.02s;
+    }
+
+    body.intro .leaf.l2 {
+      animation-delay: 1.16s;
+    }
+
+    body.intro .leaf.l3 {
+      animation-delay: 1.28s;
+    }
+
+    body.intro .leaf.l4 {
+      animation-delay: 1.42s;
+    }
+
+    body.intro .petal {
+      opacity: 0;
+      animation: petalIntro 1.28s ease-out forwards;
+    }
+
+    body.intro .petal:nth-child(1) {
+      animation-delay: 1.72s;
+    }
+
+    body.intro .petal:nth-child(2) {
+      animation-delay: 1.66s;
+    }
+
+    body.intro .petal:nth-child(3) {
+      animation-delay: 1.72s;
+    }
+
+    body.intro .petal:nth-child(4) {
+      animation-delay: 1.82s;
+    }
+
+    body.intro .petal:nth-child(5) {
+      animation-delay: 1.9s;
+    }
+
+    body.intro .petal:nth-child(6) {
+      animation-delay: 1.82s;
+    }
+
+    body.intro .flower-cup {
+      opacity: 0;
+      animation: cupIntro 0.8s ease-out forwards;
+      animation-delay: 2.16s;
+    }
+
+    body.intro .stamens {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.58);
+      animation: stamenIntro 0.9s ease-out forwards;
+      animation-delay: 2.76s;
+    }
+
+    .sparkle-layer {
+      position: absolute;
+      inset: -14px;
+      z-index: 14;
+      pointer-events: none;
+      overflow: visible;
+    }
+
+    .sparkle {
+      position: absolute;
+      left: var(--sx, 50%);
+      top: var(--sy, 50%);
+      width: var(--ss, 4px);
+      height: var(--ss, 4px);
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, rgba(243, 253, 255, 0.98) 0%, rgba(171, 236, 255, 0.76) 52%, rgba(122, 215, 250, 0) 100%);
+      box-shadow: 0 0 8px rgba(170, 236, 255, 0.56), 0 0 14px rgba(122, 214, 250, 0.32);
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.5);
+      animation: sparklePop var(--sd, 900ms) ease-out forwards;
+    }
+
+    @keyframes petalBreathe {
+      0%,
+      100% {
+        transform:
+          translate3d(-50%, calc(-100% + var(--lift, 0px)), var(--z, 0px))
+          rotateZ(var(--r, 0deg))
+          rotateX(calc(var(--rx, 0deg) - 0.7deg))
+          rotateY(var(--ry, 0deg))
+          skewX(var(--sk, 0deg))
+          scale(var(--s, 1));
+      }
+
+      50% {
+        transform:
+          translate3d(-50%, calc(-100% + var(--lift, 0px) - 1px), var(--z, 0px))
+          rotateZ(var(--r, 0deg))
+          rotateX(calc(var(--rx, 0deg) + 0.9deg))
+          rotateY(var(--ry, 0deg))
+          skewX(var(--sk, 0deg))
+          scale(calc(var(--s, 1) + 0.01));
+      }
+    }
+
+    @keyframes sparklePop {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.4);
+      }
+
+      18% {
+        opacity: 0.9;
+        transform: translate(-50%, -50%) scale(1);
+      }
+
+      100% {
+        opacity: 0;
+        transform: translate(calc(-50% + var(--tx, 0px)), calc(-50% + var(--ty, -10px))) scale(0.28);
+      }
+    }
+
+    @keyframes petalShimmer {
+      0% {
+        filter: brightness(calc(var(--br, 1) + var(--lg, 0)));
+      }
+
+      34% {
+        filter: brightness(calc(var(--br, 1) + var(--lg, 0) + 0.1));
+      }
+
+      100% {
+        filter: brightness(calc(var(--br, 1) + var(--lg, 0)));
+      }
+    }
+
+    @keyframes stemIntro {
+      0% {
+        opacity: 0.16;
+        transform: rotate(calc(var(--stem-base) + var(--stem-cursor))) scaleY(0.04);
+      }
+
+      100% {
+        opacity: 1;
+        transform: rotate(calc(var(--stem-base) + var(--stem-cursor))) scaleY(1);
+      }
+    }
+
+    @keyframes leafIntro {
+      0% {
+        opacity: 0;
+        transform: var(--leaf-base-transform) scale(0.18);
+      }
+
+      65% {
+        opacity: 0.88;
+        transform: var(--leaf-base-transform) scale(1.04);
+      }
+
+      100% {
+        opacity: 1;
+        transform: var(--leaf-base-transform) scale(1);
+      }
+    }
+
+    @keyframes petalIntro {
+      0% {
+        opacity: 0;
+        transform:
+          translate3d(calc(-50% + var(--pcx, 0px)), calc(-100% + var(--lift, 0px) + 20px), var(--z, 0px))
+          rotateZ(calc(var(--r, 0deg) * 0.45))
+          rotateX(calc(var(--rx, 0deg) - 28deg))
+          rotateY(calc(var(--ry, 0deg) * 0.45 + var(--pcy, 0deg)))
+          skewX(var(--sk, 0deg))
+          scale(calc(var(--s, 1) * 0.56));
+      }
+
+      72% {
+        opacity: calc(var(--o, 1) * 1.02);
+      }
+
+      100% {
+        opacity: var(--o, 1);
+        transform:
+          translate3d(calc(-50% + var(--pcx, 0px)), calc(-100% + var(--lift, 0px)), var(--z, 0px))
+          rotateZ(var(--r, 0deg))
+          rotateX(var(--rx, 0deg))
+          rotateY(calc(var(--ry, 0deg) + var(--pcy, 0deg)))
+          skewX(var(--sk, 0deg))
+          scale(var(--s, 1));
+      }
+    }
+
+    @keyframes cupIntro {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) rotateX(18deg) scale(0.65);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) rotateX(18deg) scale(1);
+      }
+    }
+
+    @keyframes stamenIntro {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.58);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+    }
+
+    @keyframes stamenBreath {
+      0%,
+      100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.98;
+      }
+
+      50% {
+        transform: translate(-50%, -50%) scale(1.025);
+        opacity: 1;
+      }
+    }
+
+    @keyframes centerPulse {
+      0%,
+      100% {
+        filter: brightness(1) drop-shadow(0 0 2px rgba(255, 228, 118, 0.2));
+      }
+
+      50% {
+        filter: brightness(1.12) drop-shadow(0 0 8px rgba(255, 221, 88, 0.45));
+      }
+    }
+
+    @keyframes flowerBreeze {
+      0%,
+      100% {
+        transform: translateX(calc(0px + var(--fcx, 0px))) rotate(calc(var(--base-tilt) - 1deg + var(--fcr, 0deg)));
+      }
+
+      50% {
+        transform: translateX(calc(2px + var(--fcx, 0px))) rotate(calc(var(--base-tilt) + 1.2deg + var(--fcr, 0deg)));
+      }
+    }
+
+    @keyframes leafBreeze {
+      0%,
+      100% {
+        transform: var(--leaf-base-transform) rotate(-1.2deg);
+      }
+
+      50% {
+        transform: var(--leaf-base-transform) rotate(1.4deg);
+      }
+    }
+
+    @keyframes grassBreeze {
+      0%,
+      100% {
+        transform: translateX(-50%) rotate(calc(var(--r, 0deg) - var(--amp, 3deg) + var(--cb, 0deg)));
+      }
+
+      50% {
+        transform: translateX(-50%) rotate(calc(var(--r, 0deg) + var(--amp, 3deg) + var(--cb, 0deg)));
+      }
+    }
+
+    @keyframes fireflyPulse {
+      0%,
+      100% {
+        opacity: calc(var(--o, 0.7) * 0.72);
+      }
+
+      50% {
+        opacity: calc(var(--o, 0.7) * 1.08);
+      }
+    }
+
+    @keyframes breatheHalo {
+      0%,
+      100% {
+        opacity: 0.25;
+      }
+
+      50% {
+        opacity: 0.33;
+      }
+    }
+
+    @keyframes breatheFlowers {
+      0%,
+      100% {
+        filter: brightness(1);
+      }
+
+      50% {
+        filter: brightness(1.05);
+      }
+    }
+
+    @keyframes breatheGrass {
+      0%,
+      100% {
+        filter: brightness(1);
+      }
+
+      50% {
+        filter: brightness(1.04);
+      }
+    }
+
+    @keyframes moonbeamSweep {
+      0%,
+      12% {
+        opacity: 0;
+        transform: translateX(0) rotate(-8deg);
+      }
+
+      34% {
+        opacity: 0.22;
+      }
+
+      52% {
+        opacity: 0.16;
+      }
+
+      72% {
+        opacity: 0;
+        transform: translateX(320%) rotate(-8deg);
+      }
+
+      100% {
+        opacity: 0;
+        transform: translateX(320%) rotate(-8deg);
+      }
+    }
+
+    @keyframes dewTwinkle {
+      0%,
+      100% {
+        opacity: 0.42;
+        transform: scale(0.9);
+      }
+
+      50% {
+        opacity: 0.9;
+        transform: scale(1.08);
+      }
+    }
+
+    @keyframes shootingStar {
+      0% {
+        opacity: 0;
+        transform: translate3d(var(--sx, 0px), var(--sy, 0px), 0) rotate(var(--ang, -18deg)) scaleX(0.6);
+      }
+
+      14% {
+        opacity: 0.62;
+      }
+
+      100% {
+        opacity: 0;
+        transform: translate3d(calc(var(--sx, 0px) + var(--tx, 180px)), calc(var(--sy, 0px) + var(--ty, 80px)), 0) rotate(var(--ang, -18deg)) scaleX(1.04);
+      }
+    }
+  </style>
+</head>
+<body class="intro">
+  <main class="stage">
+    <section class="flower-bed" aria-label="Three glowing lilies composition">
+      <article class="flower left" aria-label="Left lily">
+        <div class="lily" role="img" aria-label="Glowing white lily">
+          <div class="petal-ring">
+            <span class="petal"></span>
+            <span class="petal"></span>
+            <span class="petal"></span>
+            <span class="petal"></span>
+            <span class="petal"></span>
+            <span class="petal"></span>
+          </div>
+          <div class="flower-cup" aria-hidden="true"></div>
+          <div class="stamens" aria-hidden="true">
+            <span class="stamen"></span>
+            <span class="stamen"></span>
+            <span class="stamen"></span>
+            <span class="stamen"></span>
+            <span class="stamen"></span>
+            <span class="stamen"></span>
+          </div>
+        </div>
+        <div class="stem">
+          <span class="leaf l1"></span>
+          <span class="leaf l2"></span>
+          <span class="leaf l3"></span>
+          <span class="leaf l4"></span>
+        </div>
+      </article>
+
+      <article class="flower middle" aria-label="Middle lily">
+        <div class="lily" role="img" aria-label="Glowing white lily">
+          <div class="petal-ring">
+            <span class="petal"></span>
+            <span class="petal"></span>
+            <span class="petal"></span>
+            <span class="petal"></span>
+            <span class="petal"></span>
+            <span class="petal"></span>
+          </div>
+          <div class="flower-cup" aria-hidden="true"></div>
+          <div class="stamens" aria-hidden="true">
+            <span class="stamen"></span>
+            <span class="stamen"></span>
+            <span class="stamen"></span>
+            <span class="stamen"></span>
+            <span class="stamen"></span>
+            <span class="stamen"></span>
+          </div>
+        </div>
+        <div class="stem">
+          <span class="leaf l1"></span>
+          <span class="leaf l2"></span>
+          <span class="leaf l3"></span>
+          <span class="leaf l4"></span>
+        </div>
+      </article>
+
+      <article class="flower right" aria-label="Right lily">
+        <div class="lily" role="img" aria-label="Glowing white lily">
+          <div class="petal-ring">
+            <span class="petal"></span>
+            <span class="petal"></span>
+            <span class="petal"></span>
+            <span class="petal"></span>
+            <span class="petal"></span>
+            <span class="petal"></span>
+          </div>
+          <div class="flower-cup" aria-hidden="true"></div>
+          <div class="stamens" aria-hidden="true">
+            <span class="stamen"></span>
+            <span class="stamen"></span>
+            <span class="stamen"></span>
+            <span class="stamen"></span>
+            <span class="stamen"></span>
+            <span class="stamen"></span>
+          </div>
+        </div>
+        <div class="stem">
+          <span class="leaf l1"></span>
+          <span class="leaf l2"></span>
+          <span class="leaf l3"></span>
+          <span class="leaf l4"></span>
+        </div>
+      </article>
+    </section>
+
+    <div class="moonbeam" aria-hidden="true"></div>
+    <div class="star-field" id="starField" aria-hidden="true"></div>
+    <div class="shooting-star-field" id="shootingStarField" aria-hidden="true"></div>
+    <div class="firefly-field" id="fireflyField" aria-hidden="true"></div>
+    <div class="grass-field" id="grassField" aria-hidden="true"></div>
+    <div class="ground" aria-hidden="true"></div>
+  </main>
+
+  <script>
+    const INTRO_DURATION_MS = 3800;
+    const starField = document.getElementById("starField");
+    const shootingStarField = document.getElementById("shootingStarField");
+    const fireflyField = document.getElementById("fireflyField");
+    const flowerBed = document.querySelector(".flower-bed");
+    const grassField = document.getElementById("grassField");
+
+    const CONFIG = {
+      fireflyCount: 46,
+      bladeCount: 220,
+      cursorActiveMs: 260,
+      interactionRadius: 220,
+      edgePadding: 24,
+      grassCursorRadius: 260,
+      grassMaxBendDeg: 11,
+      flowerCursorRadius: 320,
+      flowerMaxTiltDeg: 4.8,
+      flowerMaxShiftPx: 12,
+      stemMaxTiltDeg: 5.5,
+      petalMaxTwistDeg: 7,
+      flowerHoverRadius: 190,
+      flowerHoverGlowMax: 0.06,
+      sparkleMinGapMs: 700,
+      sparkleMaxGapMs: 1400,
+      landingAttemptMinMs: 5200,
+      landingAttemptMaxMs: 9800,
+      landingDurationMinMs: 2600,
+      landingDurationMaxMs: 5200,
+      landingApproachStrength: 0.08,
+      landingRadius: 300,
+      landingMaxConcurrent: 1,
+      starCount: 76,
+      shimmerMinGapMs: 6400,
+      shimmerMaxGapMs: 11600,
+      pairAttemptMinMs: 9800,
+      pairAttemptMaxMs: 16800,
+      pairDurationMinMs: 2200,
+      pairDurationMaxMs: 3600,
+      pairMaxConcurrent: 1,
+      shootingStarMinGapMs: 16000,
+      shootingStarMaxGapMs: 30000,
+    };
+
+    const fireflies = [];
+    const grassBlades = [];
+    const reactiveFlowers = [];
+    const petalNodes = [];
+    const activeFireflyPairs = [];
+    const landingTargets = [];
+    const landingState = {
+      nextAttemptAt: 0,
+    };
+    const pairState = {
+      nextAttemptAt: 0,
+    };
+    const shimmerState = {
+      nextAt: 0,
+    };
+    const shootingStarState = {
+      nextAt: 0,
+    };
+    const parallax = {
+      currentX: 0,
+      currentY: 0,
+      targetX: 0,
+      targetY: 0,
+    };
+    const cursor = {
+      x: window.innerWidth * 0.5,
+      y: window.innerHeight * 0.5,
+      influence: 0,
+      lastMoveTime: 0,
+    };
+
+    let viewportWidth = window.innerWidth;
+    let viewportHeight = window.innerHeight;
+    let lastFrameTime = 0;
+
+    function rand(min, max) {
+      return min + Math.random() * (max - min);
+    }
+
+    function createFirefly() {
+      const element = document.createElement("span");
+      element.className = "firefly";
+
+      const x = (rand(4, 96) / 100) * viewportWidth;
+      const y = (rand(7, 73) / 100) * viewportHeight;
+      const pulseDuration = rand(2.8, 6.2);
+
+      element.style.setProperty("--s", `${rand(2.2, 7).toFixed(2)}px`);
+      element.style.setProperty("--o", `${rand(0.45, 0.95).toFixed(2)}`);
+      element.style.setProperty("--b", `${rand(0.1, 1).toFixed(2)}px`);
+      element.style.setProperty("--pulse", `${pulseDuration.toFixed(2)}s`);
+      element.style.setProperty("--pulse-delay", `${(-Math.random() * pulseDuration).toFixed(2)}s`);
+      element.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0)`;
+      fireflyField.appendChild(element);
+
+      fireflies.push({
+        element,
+        x,
+        y,
+        homeX: x,
+        homeY: y,
+        vx: 0,
+        vy: 0,
+        driftPhase: rand(0, Math.PI * 2),
+        driftSpeed: rand(0.45, 1.1),
+        state: "free",
+        target: null,
+        restUntil: 0,
+        cooldownUntil: 0,
+        touchElement: null,
+        pairRef: null,
+        pairSign: 0,
+      });
+    }
+
+    function initFireflies() {
+      for (let i = 0; i < CONFIG.fireflyCount; i += 1) {
+        createFirefly();
+      }
+    }
+
+    function initStars() {
+      for (let i = 0; i < CONFIG.starCount; i += 1) {
+        const star = document.createElement("span");
+        star.className = "star";
+        const x = rand(2, 98);
+        const y = rand(4, 74);
+        star.style.setProperty("--x", `${x.toFixed(2)}%`);
+        star.style.setProperty("--y", `${y.toFixed(2)}%`);
+        star.style.setProperty("--s", `${rand(1.2, 2.8).toFixed(2)}px`);
+        star.style.setProperty("--o", `${rand(0.28, 0.72).toFixed(2)}`);
+        starField.appendChild(star);
+      }
+    }
+
+    function initGrass() {
+      for (let i = 0; i < CONFIG.bladeCount; i += 1) {
+        const blade = document.createElement("span");
+        blade.className = "blade";
+
+        const position = (i / (CONFIG.bladeCount - 1)) * 100;
+        const jitter = rand(-0.65, 0.65);
+        const xPercent = Math.min(100, Math.max(0, position + jitter));
+
+        blade.style.setProperty("--x", `${xPercent}%`);
+        blade.style.setProperty("--h", `${rand(40, 160).toFixed(1)}px`);
+        blade.style.setProperty("--r", `${rand(-26, 26).toFixed(1)}deg`);
+        blade.style.setProperty("--o", `${rand(0.62, 1).toFixed(2)}`);
+        blade.style.setProperty("--amp", `${rand(1.8, 5).toFixed(2)}deg`);
+        blade.style.setProperty("--dur", `${rand(5.6, 9).toFixed(2)}s`);
+        blade.style.setProperty("--delay", `${(-Math.random() * 4).toFixed(2)}s`);
+
+        grassField.appendChild(blade);
+
+        grassBlades.push({
+          element: blade,
+          xPercent: xPercent / 100,
+          bend: 0,
+          response: rand(0.8, 1.2),
+        });
+      }
+    }
+
+    function initFlowerCursorInteraction() {
+      const flowers = document.querySelectorAll(".flower");
+      for (const flower of flowers) {
+        const lily = flower.querySelector(".lily");
+        const sparkleLayer = document.createElement("div");
+        sparkleLayer.className = "sparkle-layer";
+        if (lily) {
+          lily.appendChild(sparkleLayer);
+        }
+
+        reactiveFlowers.push({
+          element: flower,
+          stem: flower.querySelector(".stem"),
+          lily,
+          sparkleLayer,
+          shift: 0,
+          tilt: 0,
+          stemTilt: 0,
+          petalTwist: 0,
+          glowBoost: 0,
+          nextSparkleAt: performance.now() + rand(500, 1500),
+        });
+      }
+
+      const petals = document.querySelectorAll(".petal");
+      petalNodes.length = 0;
+      for (const petal of petals) {
+        petalNodes.push(petal);
+      }
+
+      const leaves = document.querySelectorAll(".leaf");
+      for (const leaf of leaves) {
+        const dew = document.createElement("span");
+        dew.className = "dew-drop";
+        dew.style.setProperty("--dd", `${rand(6.4, 10.8).toFixed(2)}s`);
+        dew.style.setProperty("--dly", `${(-rand(0, 8)).toFixed(2)}s`);
+        leaf.appendChild(dew);
+      }
+
+      shimmerState.nextAt = performance.now() + rand(1800, 4600);
+      pairState.nextAttemptAt = performance.now() + rand(6400, 11200);
+      shootingStarState.nextAt = performance.now() + rand(3800, 8600);
+    }
+
+    function triggerPetalShimmer(now) {
+      if (document.body.classList.contains("intro")) {
+        return;
+      }
+      if (petalNodes.length === 0 || now < shimmerState.nextAt) {
+        return;
+      }
+      shimmerState.nextAt = now + rand(CONFIG.shimmerMinGapMs, CONFIG.shimmerMaxGapMs);
+      const petal = petalNodes[Math.floor(Math.random() * petalNodes.length)];
+      petal.classList.remove("shimmer");
+      // Force restart for repeated shimmer on the same petal.
+      void petal.offsetWidth;
+      petal.classList.add("shimmer");
+      setTimeout(() => petal.classList.remove("shimmer"), 1500);
+    }
+
+    function spawnShootingStar(now) {
+      if (now < shootingStarState.nextAt || document.body.classList.contains("intro")) {
+        return;
+      }
+      shootingStarState.nextAt = now + rand(CONFIG.shootingStarMinGapMs, CONFIG.shootingStarMaxGapMs);
+      if (!shootingStarField) {
+        return;
+      }
+      const star = document.createElement("span");
+      star.className = "shooting-star";
+      star.style.setProperty("--sx", `${rand(viewportWidth * 0.08, viewportWidth * 0.78).toFixed(1)}px`);
+      star.style.setProperty("--sy", `${rand(viewportHeight * 0.08, viewportHeight * 0.34).toFixed(1)}px`);
+      star.style.setProperty("--tx", `${rand(120, 220).toFixed(1)}px`);
+      star.style.setProperty("--ty", `${rand(50, 110).toFixed(1)}px`);
+      star.style.setProperty("--ang", `${rand(-24, -12).toFixed(2)}deg`);
+      star.style.setProperty("--len", `${rand(62, 102).toFixed(1)}px`);
+      star.style.setProperty("--sd", `${rand(2000, 3200).toFixed(0)}ms`);
+      shootingStarField.appendChild(star);
+      setTimeout(() => star.remove(), 3600);
+    }
+
+    function beginFireflyPairAttempt(now) {
+      if (now < pairState.nextAttemptAt || document.body.classList.contains("intro")) {
+        return;
+      }
+      pairState.nextAttemptAt = now + rand(CONFIG.pairAttemptMinMs, CONFIG.pairAttemptMaxMs);
+      if (activeFireflyPairs.length >= CONFIG.pairMaxConcurrent || cursor.influence > 0.3) {
+        return;
+      }
+
+      const available = fireflies.filter((f) => f.state === "free" && now > f.cooldownUntil && !f.pairRef);
+      if (available.length < 2) {
+        return;
+      }
+
+      let first = null;
+      let second = null;
+      for (let i = 0; i < available.length; i += 1) {
+        for (let j = i + 1; j < available.length; j += 1) {
+          const a = available[i];
+          const b = available[j];
+          const d = Math.hypot(a.x - b.x, a.y - b.y);
+          if (d > 36 && d < 220) {
+            first = a;
+            second = b;
+            break;
+          }
+        }
+        if (first && second) {
+          break;
+        }
+      }
+
+      if (!first || !second) {
+        return;
+      }
+
+      const pair = {
+        a: first,
+        b: second,
+        cx: (first.x + second.x) * 0.5,
+        cy: (first.y + second.y) * 0.5,
+        radius: rand(10, 18),
+        omega: rand(2.4, 3.4),
+        phase: rand(0, Math.PI * 2),
+        until: now + rand(CONFIG.pairDurationMinMs, CONFIG.pairDurationMaxMs),
+      };
+
+      first.state = "pairing";
+      second.state = "pairing";
+      first.pairRef = pair;
+      second.pairRef = pair;
+      first.pairSign = 1;
+      second.pairSign = -1;
+      activeFireflyPairs.push(pair);
+    }
+
+    function endFireflyPair(pair, now) {
+      const members = [pair.a, pair.b];
+      for (const firefly of members) {
+        if (!firefly) {
+          continue;
+        }
+        firefly.state = "free";
+        firefly.pairRef = null;
+        firefly.pairSign = 0;
+        firefly.cooldownUntil = now + rand(3200, 6800);
+        firefly.vx += rand(-0.45, 0.45);
+        firefly.vy += rand(-0.4, 0.25);
+      }
+    }
+
+    function spawnFlowerSparkles(item, now, intensity) {
+      if (!item.sparkleLayer || now < item.nextSparkleAt) {
+        return;
+      }
+
+      item.nextSparkleAt = now + rand(CONFIG.sparkleMinGapMs, CONFIG.sparkleMaxGapMs);
+
+      const sparkleCount = intensity > 0.72 ? 2 : 1;
+      for (let i = 0; i < sparkleCount; i += 1) {
+        const sparkle = document.createElement("span");
+        sparkle.className = "sparkle";
+        sparkle.style.setProperty("--sx", `${rand(24, 76).toFixed(1)}%`);
+        sparkle.style.setProperty("--sy", `${rand(20, 64).toFixed(1)}%`);
+        sparkle.style.setProperty("--ss", `${rand(2.2, 5.2).toFixed(2)}px`);
+        sparkle.style.setProperty("--sd", `${rand(720, 1080).toFixed(0)}ms`);
+        sparkle.style.setProperty("--tx", `${rand(-10, 10).toFixed(1)}px`);
+        sparkle.style.setProperty("--ty", `${rand(-16, -6).toFixed(1)}px`);
+        item.sparkleLayer.appendChild(sparkle);
+        setTimeout(() => sparkle.remove(), 1300);
+      }
+    }
+
+    function initLandingTargets() {
+      landingTargets.length = 0;
+      const targets = document.querySelectorAll(".petal, .leaf");
+      for (const element of targets) {
+        landingTargets.push({
+          element,
+          kind: element.classList.contains("petal") ? "petal" : "leaf",
+        });
+      }
+      landingState.nextAttemptAt = performance.now() + rand(2200, 5200);
+    }
+
+    function getLandingPoint(target) {
+      const rect = target.element.getBoundingClientRect();
+      const x = rect.left + rect.width * 0.5;
+      const y = target.kind === "petal" ? rect.top + rect.height * 0.44 : rect.top + rect.height * 0.36;
+      return { x, y };
+    }
+
+    function releaseLanding(firefly) {
+      if (firefly.touchElement) {
+        firefly.touchElement.classList.remove("landing-touch");
+        firefly.touchElement = null;
+      }
+      firefly.element.classList.remove("resting");
+      firefly.target = null;
+      firefly.restUntil = 0;
+    }
+
+    function beginLandingAttempt(now) {
+      if (landingTargets.length === 0) {
+        return;
+      }
+      if (now < landingState.nextAttemptAt) {
+        return;
+      }
+
+      landingState.nextAttemptAt = now + rand(CONFIG.landingAttemptMinMs, CONFIG.landingAttemptMaxMs);
+
+      if (cursor.influence > 0.35) {
+        return;
+      }
+
+      let activeLandingCount = 0;
+      for (const firefly of fireflies) {
+        if (firefly.state === "approach" || firefly.state === "resting") {
+          activeLandingCount += 1;
+        }
+      }
+      if (activeLandingCount >= CONFIG.landingMaxConcurrent) {
+        return;
+      }
+
+      const available = fireflies.filter((firefly) => firefly.state === "free" && now > firefly.cooldownUntil);
+      if (available.length === 0) {
+        return;
+      }
+
+      const candidate = available[Math.floor(Math.random() * available.length)];
+      const nearbyTargets = [];
+
+      for (const target of landingTargets) {
+        const point = getLandingPoint(target);
+        const dx = point.x - candidate.x;
+        const dy = point.y - candidate.y;
+        const distance = Math.hypot(dx, dy);
+
+        if (distance < CONFIG.landingRadius) {
+          const kindBias = target.kind === "petal" ? 1.15 : 0.85;
+          const weight = (1 - distance / CONFIG.landingRadius) * kindBias;
+          nearbyTargets.push({ target, weight: Math.max(0.001, weight) });
+        }
+      }
+
+      if (nearbyTargets.length === 0) {
+        return;
+      }
+
+      const totalWeight = nearbyTargets.reduce((sum, entry) => sum + entry.weight, 0);
+      let pick = Math.random() * totalWeight;
+      let chosen = nearbyTargets[0].target;
+
+      for (const entry of nearbyTargets) {
+        pick -= entry.weight;
+        if (pick <= 0) {
+          chosen = entry.target;
+          break;
+        }
+      }
+
+      candidate.state = "approach";
+      candidate.target = chosen;
+      candidate.restUntil = 0;
+    }
+
+    function updateGrassCursorEffect() {
+      if (document.body.classList.contains("intro")) {
+        return;
+      }
+      const grassLineY = viewportHeight - 36;
+
+      for (const blade of grassBlades) {
+        const bladeX = blade.xPercent * viewportWidth;
+        const dx = cursor.x - bladeX;
+        const dy = cursor.y - grassLineY;
+        const distance = Math.hypot(dx, dy);
+
+        let targetBend = 0;
+        if (distance < CONFIG.grassCursorRadius && cursor.influence > 0.01) {
+          const falloff = ((CONFIG.grassCursorRadius - distance) / CONFIG.grassCursorRadius) ** 1.6;
+          const direction = bladeX < cursor.x ? -1 : 1;
+          targetBend = direction * CONFIG.grassMaxBendDeg * falloff * cursor.influence * blade.response;
+        }
+
+        blade.bend += (targetBend - blade.bend) * 0.16;
+        blade.element.style.setProperty("--cb", `${blade.bend.toFixed(2)}deg`);
+      }
+    }
+
+    function updateFlowerCursorEffect() {
+      if (document.body.classList.contains("intro")) {
+        return;
+      }
+      const now = performance.now();
+      for (const item of reactiveFlowers) {
+        const rect = item.element.getBoundingClientRect();
+        const anchorX = rect.left + rect.width * 0.5;
+        const anchorY = rect.top + rect.height * 0.38;
+        const dx = cursor.x - anchorX;
+        const dy = cursor.y - anchorY;
+        const distance = Math.hypot(dx, dy);
+
+        let targetShift = 0;
+        let targetTilt = 0;
+        let targetStemTilt = 0;
+        let targetPetalTwist = 0;
+        let targetGlowBoost = 0;
+
+        if (distance < CONFIG.flowerCursorRadius && cursor.influence > 0.01) {
+          const falloff = ((CONFIG.flowerCursorRadius - distance) / CONFIG.flowerCursorRadius) ** 1.5;
+          const side = dx >= 0 ? -1 : 1;
+          targetShift = side * CONFIG.flowerMaxShiftPx * falloff * cursor.influence;
+          targetTilt = side * CONFIG.flowerMaxTiltDeg * falloff * cursor.influence;
+          targetStemTilt = side * CONFIG.stemMaxTiltDeg * falloff * cursor.influence;
+          targetPetalTwist = side * CONFIG.petalMaxTwistDeg * falloff * cursor.influence;
+        }
+
+        if (distance < CONFIG.flowerHoverRadius && cursor.influence > 0.04) {
+          const near = ((CONFIG.flowerHoverRadius - distance) / CONFIG.flowerHoverRadius) ** 1.35;
+          const sparkleIntensity = near * cursor.influence;
+          targetGlowBoost = CONFIG.flowerHoverGlowMax * sparkleIntensity;
+          if (sparkleIntensity > 0.24) {
+            spawnFlowerSparkles(item, now, sparkleIntensity);
+          }
+        }
+
+        item.shift += (targetShift - item.shift) * 0.18;
+        item.tilt += (targetTilt - item.tilt) * 0.16;
+        item.stemTilt += (targetStemTilt - item.stemTilt) * 0.2;
+        item.petalTwist += (targetPetalTwist - item.petalTwist) * 0.14;
+        item.glowBoost += (targetGlowBoost - item.glowBoost) * 0.12;
+
+        item.element.style.setProperty("--fcx", `${item.shift.toFixed(2)}px`);
+        item.element.style.setProperty("--fcr", `${item.tilt.toFixed(2)}deg`);
+
+        if (item.stem) {
+          item.stem.style.setProperty("--stem-cursor", `${item.stemTilt.toFixed(2)}deg`);
+        }
+
+        if (item.lily) {
+          item.lily.style.setProperty("--pcx", `${(item.shift * 0.18).toFixed(2)}px`);
+          item.lily.style.setProperty("--pcy", `${item.petalTwist.toFixed(2)}deg`);
+          item.lily.style.setProperty("--hg", item.glowBoost.toFixed(3));
+        }
+      }
+    }
+
+    function updateFireflies(now) {
+      if (!lastFrameTime) {
+        lastFrameTime = now;
+      }
+
+      const dt = Math.min(2.2, (now - lastFrameTime) / 16.67);
+      lastFrameTime = now;
+
+      const isCursorMoving = now - cursor.lastMoveTime < CONFIG.cursorActiveMs;
+      const targetInfluence = isCursorMoving ? 1 : 0;
+      cursor.influence += (targetInfluence - cursor.influence) * 0.2;
+      beginLandingAttempt(now);
+      beginFireflyPairAttempt(now);
+
+      for (let i = activeFireflyPairs.length - 1; i >= 0; i -= 1) {
+        const pair = activeFireflyPairs[i];
+        if (!pair.a || !pair.b || pair.until <= now) {
+          endFireflyPair(pair, now);
+          activeFireflyPairs.splice(i, 1);
+        } else {
+          const targetCx = (pair.a.homeX + pair.b.homeX) * 0.5;
+          const targetCy = (pair.a.homeY + pair.b.homeY) * 0.5;
+          pair.cx += (targetCx - pair.cx) * 0.01;
+          pair.cy += (targetCy - pair.cy) * 0.01;
+        }
+      }
+
+      for (const firefly of fireflies) {
+        if (firefly.state === "pairing" && !firefly.pairRef) {
+          firefly.state = "free";
+        }
+
+        if (firefly.state === "approach" || firefly.state === "resting") {
+          if (!firefly.target || !firefly.target.element.isConnected) {
+            releaseLanding(firefly);
+            firefly.state = "free";
+            firefly.cooldownUntil = now + rand(2800, 6200);
+          }
+        }
+
+        const t = now * 0.001;
+        const breezeX = Math.cos(t * firefly.driftSpeed + firefly.driftPhase) * 0.017;
+        const breezeY = Math.sin(t * firefly.driftSpeed * 0.8 + firefly.driftPhase * 1.3) * 0.014;
+
+        let ax = breezeX + (firefly.homeX - firefly.x) * 0.0024;
+        let ay = breezeY + (firefly.homeY - firefly.y) * 0.0022;
+
+        if (firefly.state === "pairing" && firefly.pairRef) {
+          const pair = firefly.pairRef;
+          const phase = pair.phase + now * 0.001 * pair.omega * firefly.pairSign;
+          const targetX = pair.cx + Math.cos(phase) * pair.radius;
+          const targetY = pair.cy + Math.sin(phase) * pair.radius * 0.62;
+          const pdx = targetX - firefly.x;
+          const pdy = targetY - firefly.y;
+          const pd = Math.hypot(pdx, pdy) || 1;
+          ax += (pdx / pd) * 0.12;
+          ay += (pdy / pd) * 0.12;
+        }
+
+        if (firefly.state === "approach" && firefly.target) {
+          const landingPoint = getLandingPoint(firefly.target);
+          const tdx = landingPoint.x - firefly.x;
+          const tdy = landingPoint.y - firefly.y;
+          const targetDistance = Math.hypot(tdx, tdy) || 1;
+          ax += (tdx / targetDistance) * CONFIG.landingApproachStrength;
+          ay += (tdy / targetDistance) * CONFIG.landingApproachStrength;
+
+          if (targetDistance < 9) {
+            firefly.state = "resting";
+            firefly.restUntil = now + rand(CONFIG.landingDurationMinMs, CONFIG.landingDurationMaxMs);
+            firefly.touchElement = firefly.target.element;
+            firefly.element.classList.add("resting");
+            firefly.touchElement.classList.add("landing-touch");
+            firefly.vx *= 0.2;
+            firefly.vy *= 0.2;
+          }
+        } else if (firefly.state === "resting" && firefly.target) {
+          const landingPoint = getLandingPoint(firefly.target);
+          firefly.x += (landingPoint.x - firefly.x) * 0.14;
+          firefly.y += (landingPoint.y - firefly.y) * 0.14;
+          firefly.vx *= 0.7;
+          firefly.vy *= 0.7;
+
+          if (now >= firefly.restUntil) {
+            releaseLanding(firefly);
+            firefly.state = "free";
+            firefly.cooldownUntil = now + rand(3600, 7600);
+            firefly.vx += rand(-0.4, 0.4);
+            firefly.vy += rand(-0.7, -0.2);
+          }
+        }
+
+        const dx = cursor.x - firefly.x;
+        const dy = cursor.y - firefly.y;
+        const distance = Math.hypot(dx, dy) || 1;
+
+        if (firefly.state === "resting") {
+          firefly.element.style.transform = `translate3d(${firefly.x.toFixed(2)}px, ${firefly.y.toFixed(2)}px, 0)`;
+          continue;
+        }
+
+        if (firefly.state !== "resting" && firefly.state !== "pairing" && distance < CONFIG.interactionRadius && cursor.influence > 0.01) {
+          const pull = ((CONFIG.interactionRadius - distance) / CONFIG.interactionRadius) ** 2;
+          const escape = pull * 0.34 * cursor.influence;
+          ax -= (dx / distance) * escape;
+          ay -= (dy / distance) * escape;
+        }
+
+        const damping = 0.9 + cursor.influence * 0.06;
+        firefly.vx = (firefly.vx + ax * dt) * damping;
+        firefly.vy = (firefly.vy + ay * dt) * damping;
+
+        const maxSpeed = 1.2 + cursor.influence * 3.1;
+        const speed = Math.hypot(firefly.vx, firefly.vy);
+        if (speed > maxSpeed) {
+          const ratio = maxSpeed / speed;
+          firefly.vx *= ratio;
+          firefly.vy *= ratio;
+        }
+
+        firefly.x += firefly.vx * dt;
+        firefly.y += firefly.vy * dt;
+
+        if (firefly.x < CONFIG.edgePadding) {
+          firefly.x = CONFIG.edgePadding;
+          firefly.vx *= -0.25;
+        } else if (firefly.x > viewportWidth - CONFIG.edgePadding) {
+          firefly.x = viewportWidth - CONFIG.edgePadding;
+          firefly.vx *= -0.25;
+        }
+
+        if (firefly.y < CONFIG.edgePadding) {
+          firefly.y = CONFIG.edgePadding;
+          firefly.vy *= -0.25;
+        } else if (firefly.y > viewportHeight - CONFIG.edgePadding - 12) {
+          firefly.y = viewportHeight - CONFIG.edgePadding - 12;
+          firefly.vy *= -0.25;
+        }
+
+        firefly.element.style.transform = `translate3d(${firefly.x.toFixed(2)}px, ${firefly.y.toFixed(2)}px, 0)`;
+      }
+    }
+
+    function updateParallax() {
+      const nx = (cursor.x / Math.max(1, viewportWidth) - 0.5) * 2;
+      const ny = (cursor.y / Math.max(1, viewportHeight) - 0.5) * 2;
+      parallax.targetX = nx;
+      parallax.targetY = ny;
+      parallax.currentX += (parallax.targetX - parallax.currentX) * 0.05;
+      parallax.currentY += (parallax.targetY - parallax.currentY) * 0.05;
+
+      const starX = (-parallax.currentX * 2.2).toFixed(2);
+      const starY = (-parallax.currentY * 1.6).toFixed(2);
+      starField.style.setProperty("--px", `${starX}px`);
+      starField.style.setProperty("--py", `${starY}px`);
+
+      const fireflyX = (-parallax.currentX * 4.4).toFixed(2);
+      const fireflyY = (-parallax.currentY * 3.1).toFixed(2);
+      fireflyField.style.setProperty("--px", `${fireflyX}px`);
+      fireflyField.style.setProperty("--py", `${fireflyY}px`);
+
+      const flowerX = (-parallax.currentX * 6.4).toFixed(2);
+      const flowerY = (-parallax.currentY * 4.2).toFixed(2);
+      if (flowerBed) {
+        flowerBed.style.setProperty("--px", `${flowerX}px`);
+        flowerBed.style.setProperty("--py", `${flowerY}px`);
+      }
+
+      const grassX = (-parallax.currentX * 8.2).toFixed(2);
+      const grassY = (-parallax.currentY * 5.8).toFixed(2);
+      grassField.style.setProperty("--px", `${grassX}px`);
+      grassField.style.setProperty("--py", `${grassY}px`);
+    }
+
+    function tick(now) {
+      updateParallax();
+      triggerPetalShimmer(now);
+      spawnShootingStar(now);
+      updateFireflies(now);
+      updateGrassCursorEffect();
+      updateFlowerCursorEffect();
+      requestAnimationFrame(tick);
+    }
+
+    function onMouseMove(event) {
+      cursor.x = event.clientX;
+      cursor.y = event.clientY;
+      cursor.lastMoveTime = performance.now();
+    }
+
+    function onResize() {
+      const prevWidth = viewportWidth;
+      const prevHeight = viewportHeight;
+      viewportWidth = window.innerWidth;
+      viewportHeight = window.innerHeight;
+
+      const scaleX = viewportWidth / Math.max(1, prevWidth);
+      const scaleY = viewportHeight / Math.max(1, prevHeight);
+
+      for (const firefly of fireflies) {
+        firefly.x *= scaleX;
+        firefly.y *= scaleY;
+        firefly.homeX *= scaleX;
+        firefly.homeY *= scaleY;
+      }
+
+      for (const blade of grassBlades) {
+        blade.element.style.setProperty("--x", `${(blade.xPercent * 100).toFixed(3)}%`);
+      }
+
+      for (const firefly of fireflies) {
+        if (firefly.target && !firefly.target.element.isConnected) {
+          releaseLanding(firefly);
+          firefly.state = "free";
+        }
+      }
+    }
+
+    initStars();
+    initFireflies();
+    initGrass();
+    initFlowerCursorInteraction();
+    initLandingTargets();
+    setTimeout(() => {
+      document.body.classList.remove("intro");
+    }, INTRO_DURATION_MS);
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("resize", onResize);
+    requestAnimationFrame(tick);
+  </script>
+</body>
+</html>
